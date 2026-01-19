@@ -117,8 +117,11 @@ function validateForm(data) {
 
 // Send email function
 async function sendEmail(data) {
-  // Enviar al backend local
-  const backendUrl = "http://localhost:3000/api/confirmacion";
+  // Detectar automáticamente si estamos en producción o desarrollo
+  const backendUrl =
+    window.location.hostname === "localhost"
+      ? "http://localhost:3000/api/confirmacion"
+      : "/api/confirmacion";
 
   try {
     const response = await fetch(backendUrl, {
