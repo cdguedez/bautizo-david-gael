@@ -7,12 +7,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, "data", "confirmaciones.json");
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "..")));
 
-// Asegurar que el directorio de datos existe
 async function ensureDataDirectory() {
   const dataDir = path.join(__dirname, "data");
   try {
@@ -21,7 +19,6 @@ async function ensureDataDirectory() {
     await fs.mkdir(dataDir, { recursive: true });
   }
 
-  // Crear archivo JSON si no existe
   try {
     await fs.access(DATA_FILE);
   } catch {
@@ -29,7 +26,6 @@ async function ensureDataDirectory() {
   }
 }
 
-// Leer confirmaciones
 async function readConfirmaciones() {
   try {
     const data = await fs.readFile(DATA_FILE, "utf8");
@@ -40,7 +36,6 @@ async function readConfirmaciones() {
   }
 }
 
-// Guardar confirmaciones
 async function saveConfirmaciones(confirmaciones) {
   try {
     await fs.writeFile(DATA_FILE, JSON.stringify(confirmaciones, null, 2));
@@ -51,13 +46,11 @@ async function saveConfirmaciones(confirmaciones) {
   }
 }
 
-// Endpoint para guardar confirmación
 app.post("/api/confirmacion", async (req, res) => {
   try {
     const { nombre, apellido, telefono, email, acompanantes, mensaje } =
       req.body;
 
-    // Validar datos requeridos
     if (!nombre || !apellido || !telefono || !email) {
       return res.status(400).json({
         success: false,
@@ -65,10 +58,8 @@ app.post("/api/confirmacion", async (req, res) => {
       });
     }
 
-    // Leer confirmaciones existentes
     const confirmaciones = await readConfirmaciones();
 
-    // Crear nueva confirmación
     const nuevaConfirmacion = {
       id: Date.now(),
       nombre,
@@ -80,7 +71,6 @@ app.post("/api/confirmacion", async (req, res) => {
       fecha: new Date().toISOString(),
     };
 
-    // Agregar y guardar
     confirmaciones.push(nuevaConfirmacion);
     const saved = await saveConfirmaciones(confirmaciones);
 
@@ -105,7 +95,6 @@ app.post("/api/confirmacion", async (req, res) => {
   }
 });
 
-// Endpoint para obtener todas las confirmaciones
 app.get("/api/confirmaciones", async (req, res) => {
   try {
     const confirmaciones = await readConfirmaciones();
@@ -123,7 +112,6 @@ app.get("/api/confirmaciones", async (req, res) => {
   }
 });
 
-// Endpoint para obtener estadísticas
 app.get("/api/estadisticas", async (req, res) => {
   try {
     const confirmaciones = await readConfirmaciones();
@@ -153,11 +141,10 @@ app.get("/api/estadisticas", async (req, res) => {
   }
 });
 
-// Iniciar servidor
 async function startServer() {
   await ensureDataDirectory();
   app.listen(PORT, () => {
-    console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
+    console.log(`✅ Servidor corriendo en puerto ${PORT}`);
     console.log(`📁 Datos guardados en: ${DATA_FILE}`);
   });
 }

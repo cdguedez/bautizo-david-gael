@@ -218,25 +218,26 @@
             const listaDiv = document.getElementById('listaConfirmaciones');
             listaDiv.innerHTML = '<div class="loading">Cargando confirmaciones...</div>';
 
+            const apiUrl = window.location.hostname === 'localhost'
+                ? 'http://localhost:3000/api'
+                : '/api';
+
             try {
-                const response = await fetch('http://localhost:3000/api/estadisticas');
+                const response = await fetch(`${apiUrl}/estadisticas`);
                 const result = await response.json();
 
                 if (result.success) {
                     const { totalConfirmaciones, totalPersonas, confirmaciones } = result.data;
 
-                    // Actualizar estadísticas
                     document.getElementById('totalConfirmaciones').textContent = totalConfirmaciones;
                     document.getElementById('totalPersonas').textContent = totalPersonas;
 
-                    // Mostrar confirmaciones
                     if (confirmaciones.length === 0) {
                         listaDiv.innerHTML = '<div class="loading">No hay confirmaciones aún</div>';
                         return;
                     }
 
-                    // Obtener detalles completos
-                    const responseDetalle = await fetch('http://localhost:3000/api/confirmaciones');
+                    const responseDetalle = await fetch(`${apiUrl}/confirmaciones`);
                     const resultDetalle = await responseDetalle.json();
 
                     if (resultDetalle.success) {
@@ -291,10 +292,8 @@
             }
         }
 
-        // Cargar al inicio
         cargarConfirmaciones();
 
-        // Auto-actualizar cada 30 segundos
         setInterval(cargarConfirmaciones, 30000);
     </script>
 </body>
