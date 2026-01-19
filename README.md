@@ -14,33 +14,34 @@ Una hermosa landing page con colores pasteles para celebrar el bautizo de David 
 
 ## 📋 Configuración Necesaria
 
-### 1. Configurar el Correo Electrónico
+### 1. Configurar el Backend (Almacenamiento de Confirmaciones)
 
-Para recibir las confirmaciones de asistencia, necesitas configurar tu correo electrónico:
+El proyecto ahora incluye un backend simple que almacena las confirmaciones en un archivo JSON:
 
-#### Opción A: Usar FormSubmit.co (Recomendado - Gratis)
+1. Navega a la carpeta backend:
 
-1. Abre el archivo [`script.js`](script.js:73)
-2. Busca la línea 73: `const formSubmitUrl = 'https://formsubmit.co/ajax/YOUR_EMAIL@example.com';`
-3. Reemplaza `YOUR_EMAIL@example.com` con tu correo electrónico real
-4. La primera vez que alguien envíe el formulario, FormSubmit te enviará un email de confirmación
-5. Haz clic en el enlace de confirmación y ¡listo!
-
-**Ejemplo:**
-
-```javascript
-const formSubmitUrl = "https://formsubmit.co/ajax/carlos@example.com";
+```bash
+cd backend
 ```
 
-#### Opción B: Email Manual (Fallback)
+2. Instala las dependencias:
 
-Si FormSubmit no funciona, el sistema abrirá automáticamente el cliente de correo del usuario con los datos pre-llenados.
-
-También necesitas actualizar la línea 119 en [`script.js`](script.js:119):
-
-```javascript
-window.location.href = `mailto:TU_EMAIL@example.com?subject=${subject}&body=${body}`;
+```bash
+npm install
 ```
+
+3. Inicia el servidor:
+
+```bash
+npm start
+```
+
+El servidor se ejecutará en `http://localhost:3000` y guardará todas las confirmaciones en [`backend/data/confirmaciones.json`](backend/data/confirmaciones.json).
+
+**Ver las confirmaciones:**
+Abre [`backend/ver-confirmaciones.html`](backend/ver-confirmaciones.html) en tu navegador para ver todas las confirmaciones recibidas con estadísticas en tiempo real.
+
+Para más detalles, consulta [`backend/README.md`](backend/README.md).
 
 ### 2. Configurar el Mapa de Google
 
@@ -142,10 +143,19 @@ Si deseas cambiar los colores, edita las variables CSS en [`styles.css`](styles.
 ```
 mi-bautizo/
 │
-├── index.html          # Estructura principal de la página
-├── styles.css          # Estilos y diseño
-├── script.js           # Funcionalidad y validación del formulario
-└── README.md           # Este archivo
+├── index.html                      # Estructura principal de la página
+├── styles.css                      # Estilos y diseño
+├── script.js                       # Funcionalidad y validación del formulario
+├── README.md                       # Este archivo
+│
+└── backend/                        # Backend para almacenar confirmaciones
+    ├── server.js                   # Servidor Express
+    ├── package.json                # Dependencias del backend
+    ├── README.md                   # Documentación del backend
+    ├── ver-confirmaciones.html     # Página para ver confirmaciones
+    ├── .gitignore                  # Archivos a ignorar en git
+    └── data/
+        └── confirmaciones.json     # Almacenamiento de datos (se crea automáticamente)
 ```
 
 ## 🌐 Compatibilidad

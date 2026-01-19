@@ -117,58 +117,28 @@ function validateForm(data) {
 
 // Send email function
 async function sendEmail(data) {
-  // Option 1: Using FormSubmit.co (recommended - no backend needed)
-  // Replace 'YOUR_EMAIL@example.com' with your actual email
-  const formSubmitUrl = "https://formsubmit.co/ajax/YOUR_EMAIL@example.com";
+  // Enviar al backend local
+  const backendUrl = "http://localhost:3000/api/confirmacion";
 
   try {
-    const response = await fetch(formSubmitUrl, {
+    const response = await fetch(backendUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      body: JSON.stringify({
-        name: `${data.nombre} ${data.apellido}`,
-        email: data.email,
-        phone: data.telefono,
-        guests: data.acompanantes,
-        message: data.mensaje,
-        _subject: `Confirmación de Asistencia - Bautizo David Gael`,
-        _template: "table",
-      }),
+      body: JSON.stringify(data),
     });
 
-    if (response.ok) {
+    const result = await response.json();
+
+    if (response.ok && result.success) {
       return { success: true };
     } else {
       return { success: false };
     }
   } catch (error) {
-    console.error("Error sending email:", error);
-
-    // Fallback: Open email client with pre-filled data
-    const subject = encodeURIComponent(
-      "Confirmación de Asistencia - Bautizo David Gael",
-    );
-    const body = encodeURIComponent(
-      `Nombre: ${data.nombre} ${data.apellido}\n` +
-        `Teléfono: ${data.telefono}\n` +
-        `Email: ${data.email}\n` +
-        `Acompañantes: ${data.acompanantes}\n` +
-        `Mensaje: ${data.mensaje}`,
-    );
-
-    // Show alternative message
-    showMessage(
-      "No se pudo enviar automáticamente. Se abrirá tu cliente de correo para enviar manualmente.",
-      "error",
-    );
-
-    setTimeout(() => {
-      window.location.href = `mailto:YOUR_EMAIL@example.com?subject=${subject}&body=${body}`;
-    }, 2000);
-
+    console.error("Error enviando confirmación:", error);
     return { success: false };
   }
 }
