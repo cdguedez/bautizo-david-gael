@@ -218,7 +218,7 @@
             const listaDiv = document.getElementById('listaConfirmaciones');
             listaDiv.innerHTML = '<div class="loading">Cargando confirmaciones...</div>';
 
-            const apiUrl = window.location.hostname === 'localhost'
+            const apiUrl = window.location.hostname === 'wsl.localhost'
                 ? 'http://localhost:3000/api'
                 : '/api';
 

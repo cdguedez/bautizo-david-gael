@@ -27,14 +27,59 @@ if (scrollIndicator) {
 const rsvpForm = document.getElementById("rsvpForm");
 const formMessage = document.getElementById("formMessage");
 
+const telefonoInput = document.getElementById("telefono");
+if (telefonoInput) {
+  telefonoInput.addEventListener("input", function (e) {
+    let value = e.target.value.replace(/\D/g, "");
+
+    if (value.startsWith("0")) {
+      value = value.substring(1);
+    }
+
+    if (value.length > 0) {
+      const validPrefixes = ["412", "424", "414", "426", "416"];
+      const prefix = value.substring(0, 3);
+
+      if (value.length >= 3 && !validPrefixes.includes(prefix)) {
+        value = value.substring(0, 2);
+      }
+    }
+
+    if (value.length > 10) {
+      value = value.substring(0, 10);
+    }
+
+    if (value.length > 3) {
+      value = value.substring(0, 3) + "-" + value.substring(3);
+    }
+
+    e.target.value = value;
+  });
+
+  telefonoInput.addEventListener("blur", function (e) {
+    const value = e.target.value.replace(/\D/g, "");
+    if (value.length > 0 && value.length < 10) {
+      showMessage(
+        "El teléfono debe tener 10 dígitos (ej: 412-1234567)",
+        "error",
+      );
+    }
+  });
+}
+
 if (rsvpForm) {
   rsvpForm.addEventListener("submit", async function (e) {
     e.preventDefault();
 
+    const telefonoRaw = document
+      .getElementById("telefono")
+      .value.replace(/\D/g, "");
+    const telefonoFormateado = "+58" + telefonoRaw;
+
     const formData = {
       nombre: document.getElementById("nombre").value.trim(),
       apellido: document.getElementById("apellido").value.trim(),
-      telefono: document.getElementById("telefono").value.trim(),
+      telefono: telefonoFormateado,
       email: document.getElementById("email").value.trim(),
       acompanantes: document.getElementById("acompanantes").value,
       mensaje: document.getElementById("mensaje").value.trim(),
@@ -88,9 +133,19 @@ function validateForm(data) {
     return false;
   }
 
-  const phoneRegex = /^[\d\s\-\+\(\)]+$/;
-  if (!phoneRegex.test(data.telefono) || data.telefono.length < 7) {
+  const phoneRegex = /^\+58\d{10}$/;
+  if (!phoneRegex.test(data.telefono)) {
     showMessage("Por favor, ingresa un número de teléfono válido.", "error");
+    return false;
+  }
+
+  const areaCode = data.telefono.substring(3, 6);
+  const validAreaCodes = ["412", "424", "414", "426", "416"];
+  if (!validAreaCodes.includes(areaCode)) {
+    showMessage(
+      "El código de área debe ser 412, 424, 414, 426 o 416.",
+      "error",
+    );
     return false;
   }
 
@@ -105,7 +160,7 @@ function validateForm(data) {
 
 async function sendEmail(data) {
   const backendUrl =
-    window.location.hostname === "localhost"
+    window.location.hostname === "wsl.localhost"
       ? "http://localhost:3000/api/confirmacion"
       : "/api/confirmacion";
 

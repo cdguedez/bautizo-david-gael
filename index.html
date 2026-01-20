@@ -106,7 +106,12 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="telefono">Teléfono *</label>
-                        <input type="tel" id="telefono" name="telefono" required>
+                        <div style="position: relative;">
+                            <span
+                                style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #666; font-size: 0.95em;">+58</span>
+                            <input type="tel" id="telefono" name="telefono" placeholder="412-1234567" maxlength="11"
+                                style="padding-left: 45px;" required>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="email">Correo Electrónico *</label>
