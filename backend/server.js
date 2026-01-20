@@ -60,6 +60,29 @@ app.post("/api/confirmacion", async (req, res) => {
 
     const confirmaciones = await readConfirmaciones();
 
+    const duplicadoEmail = confirmaciones.find(
+      (c) => c.email.toLowerCase() === email.toLowerCase(),
+    );
+    const duplicadoTelefono = confirmaciones.find(
+      (c) => c.telefono === telefono,
+    );
+
+    if (duplicadoEmail) {
+      return res.status(409).json({
+        success: false,
+        message: "Ya existe una confirmación con este correo electrónico",
+        duplicate: true,
+      });
+    }
+
+    if (duplicadoTelefono) {
+      return res.status(409).json({
+        success: false,
+        message: "Ya existe una confirmación con este número de teléfono",
+        duplicate: true,
+      });
+    }
+
     const nuevaConfirmacion = {
       id: Date.now(),
       nombre,

@@ -1,3 +1,48 @@
+const btnConfirmarAsistencia = document.getElementById(
+  "btnConfirmarAsistencia",
+);
+const btnVerUbicacion = document.getElementById("btnVerUbicacion");
+const rsvpSection = document.querySelector(".rsvp");
+const locationSection = document.querySelector(".location");
+
+if (btnConfirmarAsistencia) {
+  btnConfirmarAsistencia.addEventListener("click", () => {
+    if (!rsvpSection.classList.contains("show")) {
+      rsvpSection.classList.add("show");
+      setTimeout(() => {
+        rsvpSection.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 100);
+    } else {
+      rsvpSection.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  });
+}
+
+if (btnVerUbicacion) {
+  btnVerUbicacion.addEventListener("click", () => {
+    if (!locationSection.classList.contains("show")) {
+      locationSection.classList.add("show");
+      setTimeout(() => {
+        locationSection.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 100);
+    } else {
+      locationSection.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  });
+}
+
 document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
   anchor.addEventListener("click", function (e) {
     e.preventDefault();
@@ -89,6 +134,14 @@ if (rsvpForm) {
       return;
     }
 
+    if (checkLocalConfirmation()) {
+      showMessage(
+        "Ya has confirmado tu asistencia desde este dispositivo. Si necesitas hacer cambios, por favor contáctanos.",
+        "error",
+      );
+      return;
+    }
+
     const submitBtn = rsvpForm.querySelector(".submit-btn");
     const originalText = submitBtn.textContent;
     submitBtn.disabled = true;
@@ -98,11 +151,17 @@ if (rsvpForm) {
       const response = await sendEmail(formData);
 
       if (response.success) {
+        saveLocalConfirmation(formData);
         showMessage(
           "¡Gracias por confirmar tu asistencia! Nos vemos pronto.",
           "success",
         );
         rsvpForm.reset();
+      } else if (response.duplicate) {
+        showMessage(
+          response.message || "Ya existe una confirmación con estos datos.",
+          "error",
+        );
       } else {
         showMessage(
           "Hubo un error al enviar el formulario. Por favor, intenta nuevamente.",
@@ -178,6 +237,8 @@ async function sendEmail(data) {
 
     if (response.ok && result.success) {
       return { success: true };
+    } else if (response.status === 409 && result.duplicate) {
+      return { success: false, duplicate: true, message: result.message };
     } else {
       return { success: false };
     }
@@ -225,4 +286,60 @@ document.addEventListener("DOMContentLoaded", () => {
     el.style.transition = "opacity 0.6s ease, transform 0.6s ease";
     observer.observe(el);
   });
+
+  // Verificar si ya confirmó al cargar la página
+  if (checkLocalConfirmation()) {
+    const rsvpFormElement = document.getElementById("rsvpForm");
+    if (rsvpFormElement) {
+      const confirmationData = getLocalConfirmation();
+      showMessage(
+        `Ya has confirmado tu asistencia como ${confirmationData.nombre} ${confirmationData.apellido}. Si necesitas hacer cambios, por favor contáctanos.`,
+        "error",
+      );
+      // Deshabilitar el formulario
+      const inputs = rsvpFormElement.querySelectorAll(
+        "input, textarea, button",
+      );
+      inputs.forEach((input) => {
+        input.disabled = true;
+      });
+    }
+  }
 });
+
+// Funciones para manejar localStorage
+function saveLocalConfirmation(data) {
+  try {
+    const confirmationData = {
+      nombre: data.nombre,
+      apellido: data.apellido,
+      email: data.email,
+      telefono: data.telefono,
+      timestamp: new Date().toISOString(),
+      userAgent: navigator.userAgent,
+    };
+    localStorage.setItem("rsvp_confirmation", JSON.stringify(confirmationData));
+  } catch (error) {
+    console.error("Error guardando en localStorage:", error);
+  }
+}
+
+function checkLocalConfirmation() {
+  try {
+    const confirmation = localStorage.getItem("rsvp_confirmation");
+    return confirmation !== null;
+  } catch (error) {
+    console.error("Error verificando localStorage:", error);
+    return false;
+  }
+}
+
+function getLocalConfirmation() {
+  try {
+    const confirmation = localStorage.getItem("rsvp_confirmation");
+    return confirmation ? JSON.parse(confirmation) : null;
+  } catch (error) {
+    console.error("Error obteniendo de localStorage:", error);
+    return null;
+  }
+}
