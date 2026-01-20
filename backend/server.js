@@ -135,6 +135,125 @@ app.get("/api/confirmaciones", async (req, res) => {
   }
 });
 
+app.delete("/api/confirmacion/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const confirmaciones = await readConfirmaciones();
+
+    const index = confirmaciones.findIndex((c) => c.id === id);
+
+    if (index === -1) {
+      return res.status(404).json({
+        success: false,
+        message: "Confirmación no encontrada",
+      });
+    }
+
+    confirmaciones.splice(index, 1);
+    const saved = await saveConfirmaciones(confirmaciones);
+
+    if (saved) {
+      res.json({
+        success: true,
+        message: "Confirmación eliminada exitosamente",
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: "Error al eliminar la confirmación",
+      });
+    }
+  } catch (error) {
+    console.error("Error en DELETE /api/confirmacion/:id:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error del servidor",
+    });
+  }
+});
+
+app.put("/api/confirmacion/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { nombre, apellido, telefono, email, acompanantes, mensaje } = req.body;
+
+    if (!nombre || !apellido || !telefono || !email) {
+      return res.status(400).json({
+        success: false,
+        message: "Faltan datos requeridos",
+      });
+    }
+
+    const confirmaciones = await readConfirmaciones();
+    const index = confirmaciones.findIndex((c) => c.id === id);
+
+    if (index === -1) {
+      return res.status(404).json({
+        success: false,
+        message: "Confirmación no encontrada",
+      });
+    }
+
+    // Verificar duplicados excluyendo el registro actual
+    const duplicadoEmail = confirmaciones.find(
+      (c) => c.id !== id && c.email.toLowerCase() === email.toLowerCase()
+    );
+    const duplicadoTelefono = confirmaciones.find(
+      (c) => c.id !== id && c.telefono === telefono
+    );
+
+    if (duplicadoEmail) {
+      return res.status(409).json({
+        success: false,
+        message: "Ya existe otra confirmación con este correo electrónico",
+        duplicate: true,
+      });
+    }
+
+    if (duplicadoTelefono) {
+      return res.status(409).json({
+        success: false,
+        message: "Ya existe otra confirmación con este número de teléfono",
+        duplicate: true,
+      });
+    }
+
+    // Actualizar la confirmación manteniendo el ID y fecha original
+    const confirmacionActualizada = {
+      id: confirmaciones[index].id,
+      nombre,
+      apellido,
+      telefono,
+      email,
+      acompanantes: parseInt(acompanantes) || 0,
+      mensaje: mensaje || "",
+      fecha: confirmaciones[index].fecha,
+    };
+
+    confirmaciones[index] = confirmacionActualizada;
+    const saved = await saveConfirmaciones(confirmaciones);
+
+    if (saved) {
+      res.json({
+        success: true,
+        message: "Confirmación actualizada exitosamente",
+        data: confirmacionActualizada,
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: "Error al actualizar la confirmación",
+      });
+    }
+  } catch (error) {
+    console.error("Error en PUT /api/confirmacion/:id:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error del servidor",
+    });
+  }
+});
+
 app.get("/api/estadisticas", async (req, res) => {
   try {
     const confirmaciones = await readConfirmaciones();
